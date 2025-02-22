@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { useSignInWithEmailAndPassword } from 'react-firebase-hooks/auth';
 import { auth } from '../firebase/config';
 import { useRouter } from 'next/navigation';
-
 const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -48,7 +47,7 @@ const SignIn = () => {
   useEffect(() => {
     if (user) {
       sessionStorage.setItem('user', true);
-      router.push('/dashboard'); // Redirects to dashboard now
+      router.push('../src/components/Dashboard'); // Redirects to dashboard now
     }
   }, [user, router]);
 
