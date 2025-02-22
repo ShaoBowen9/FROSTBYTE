@@ -12,7 +12,6 @@ const SignIn = () => {
   const [errorMessage, setErrorMessage] = useState('');
 
   // Handle authentication errors
-  
   useEffect(() => {
     if (error) {
       console.error('Sign-in error:', error); // Log full error for debugging
@@ -23,8 +22,6 @@ const SignIn = () => {
       switch (error.code) {
         case 'auth/invalid-credential':
         case 'auth/wrong-password':
-          setErrorMessage('Invalid email or password.');
-          break;
         case 'auth/user-not-found':
           setErrorMessage('Invalid email or password.');
           break;
@@ -44,7 +41,6 @@ const SignIn = () => {
     }
 
     setErrorMessage(''); // Clear previous errors before attempting sign-in
-
     signInWithEmailAndPassword(email, password);
   };
 
@@ -52,7 +48,7 @@ const SignIn = () => {
   useEffect(() => {
     if (user) {
       sessionStorage.setItem('user', true);
-      router.push('/home');
+      router.push('/dashboard'); // Redirects to dashboard now
     }
   }, [user, router]);
 
