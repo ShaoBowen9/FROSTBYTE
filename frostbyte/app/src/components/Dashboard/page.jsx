@@ -1,12 +1,18 @@
-'use client'
+'use client';
+
 import React, { useState } from "react";
 import axios from "axios";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const Dashboard = () => {
   const [clothing, setClothing] = useState("");
   const [city, setCity] = useState("");
   const [weatherData, setWeatherData] = useState(null);
+  const [aiResponse, setAiResponse] = useState("Gemini AI will analyze your input...");
   const [error, setError] = useState(null);
+
+  const GEMINI_API_KEY = "AIzaSyBUp9DfpXww39o7UEofzgLvkknLDCHqUoU";  // Replace with your Gemini API key
+  const WEATHER_API_KEY = "02f4b78c4fe4ef6ae46a41482188ccc5";  // Replace with your OpenWeather API key
 
   const handleClothingChange = (e) => {
     if (e.target.value.length <= 250) {
@@ -19,19 +25,56 @@ const Dashboard = () => {
   };
 
   const fetchWeather = async () => {
-    const API_KEY = "02f4b78c4fe4ef6ae46a41482188ccc5"; // Replace with your actual API key
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${API_KEY}`;
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${WEATHER_API_KEY}`;
 
     try {
       const response = await axios.get(url);
       const { temp } = response.data.main;
       const { speed } = response.data.wind;
-      
+
       setWeatherData({ temp, speed });
       setError(null);
     } catch (err) {
       setWeatherData(null);
       setError("City not found. Please enter a valid city.");
+    }
+  };
+
+  const generateAnalysis = async () => {
+    if (!city.trim() || !clothing.trim()) {
+      setAiResponse("Error: Please enter both clothing and city.");
+      return;
+    }
+
+    if (!weatherData) {
+      setAiResponse("Error: Weather data is missing. Please enter a valid city.");
+      return;
+    }
+
+    setAiResponse("Generating AI analysis...");
+
+    try {
+      const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+      const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+      const prompt = `
+        Analyze the risk of frostbite and hypothermia based on the following conditions:
+        - User's clothing: ${clothing}
+        - Temperature: ${weatherData.temp}°C
+        - Wind speed: ${weatherData.speed} m/s
+        Provide:
+        1. Risk level of frostbite and hypothermia.
+        2. Recommended safe outdoor time.
+        3. Clothing improvements.
+        Format your response concisely.
+      `;
+
+      const result = await model.generateContent(prompt);
+      const responseText = result.response.text();
+
+      setAiResponse(responseText);
+    } catch (error) {
+      setAiResponse("Error: Failed to generate AI analysis. Please try again.");
     }
   };
 
@@ -85,9 +128,15 @@ const Dashboard = () => {
           <textarea
             className="w-full p-3 border rounded-lg bg-gray-100 text-gray-600"
             rows="6"
-            value="Gemini AI will analyze your input..."
+            value={aiResponse}
             readOnly
           ></textarea>
+          <button
+            onClick={generateAnalysis}
+            className="mt-4 w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"
+          >
+            Generate Analysis
+          </button>
         </div>
       </div>
 
